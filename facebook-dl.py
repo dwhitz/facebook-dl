@@ -9,6 +9,7 @@ import random
 import argparse
 
 good = "\033[92m✔\033[0m"
+yeah = "\U0001f919"
 
 # This magic spell lets me erase the current line. 
 # I can use this to show for example "Downloading..."
@@ -19,9 +20,10 @@ ERASE_LINE = '\x1b[2K'
 
 # This extracts the video url
 def extract_url(html, quality):
+    # Standard Definition video 
     if quality == "sd":
-        # Standard Definition video
-        url = re.search('sd_src:"(.+?)"', html)[0]
+        # if not found skip
+        url = '' if re.search('sd_src:"(.+?)"', html) is None else re.search('sd_src:"(.+?)"', html)[0]
     else:
         # High Definition video
         url = re.search('hd_src:"(.+?)"', html)
@@ -74,6 +76,10 @@ def download_video_list(url_list, resolution):
 def download_video(url, resolution):
     file_url = extract_url(url, resolution)
 
+    if file_url == '':
+        print("Skipped video, empty url")
+        return
+
     file_name = "fb_videos/" + video_name(file_url) + ".mp4"
     print("Downloading video...", end='\r', flush=True)
 
@@ -97,11 +103,13 @@ def main():
     print(good, "Fetched source code")
 
     url_list = args.url.split(",")
-    print("\n" + str(len(url_list)) + " videos")
+    print("\n" + str(len(url_list)) + " videos found")
     if len(url_list) > 1:
         download_video_list(url_list, args.resolution)
     else:
         download_video(r.text, args.resolution)
+
+    print(yeah, "All video have been downloaded", yeah)
 
 
 if __name__ == "__main__":
